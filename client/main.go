@@ -33,7 +33,7 @@ type (
 
 func GetWindowTextLengthW(hwnd uintptr) int {
 	length, _, _ := GetWindowsTextLength.Call(hwnd)
-	return int(length)
+	return int(length + 1)
 
 }
 
@@ -46,8 +46,8 @@ func GetForegroundWindow() (hwnd HWND) {
 
 func GetWindowTextW(hwnd uintptr, nMaxCount int) string { //在获取了hwnd之后可以使用这个函数来获取窗口标题,参数有三个
 	//Length, _, _ := GetWindowsTextLength.Call(uintptr(hwnd)) //获取一个不大于15的标题长度,之后可以用来找标题是什么
-	textlength := GetWindowTextLengthW(uintptr(hwnd)) + 1
-	LpString := make([]uint16, textlength)
+
+	LpString := make([]uint16, nMaxCount)
 	length, _, _ := getWindowText.Call(
 		hwnd,
 		uintptr(unsafe.Pointer(&LpString[0])),
