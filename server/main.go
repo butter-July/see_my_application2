@@ -1,36 +1,25 @@
-package server
+package main
 
 import (
-	"fmt"
+	"io"
 	"log"
-	"net"
 	"net/http"
 )
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte(""))
-}
-
-func IndexHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("GET /")
-	w.Write([]byte("res"))
-	// fmt.Fprint(w, value)
-}
-
 func main() {
-	//http.HandleFunc("/view/", viewHandler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
-	http.ListenAndServe("localhost:8080", nil)
-	fmt.Println("server start on port 80")
-	listen, err := net.Listen("tcp", "localhost:8080")
-	if err != nil {
-		log.Fatal(err)
-	}
-	for {
-		_, err := listen.Accept()
-		if err != nil {
-			continue
+	currentWindowTitle := ""
+
+	http.HandleFunc("/", func(responseWriter http.ResponseWriter, request *http.Request) {
+		switch request.Method {
+		case http.MethodGet:
+			_, _ = responseWriter.Write([]byte(currentWindowTitle))
+		case http.MethodPost:
+			body, _ := io.ReadAll(request.Body)
+			defer request.Body.Close()
+			currentWindowTitle = string(body)
 		}
-	}
+	})
+
+	log.Println("HTTP server starting")
+	log.Fatalln(http.ListenAndServe(":8080", nil))
 }
