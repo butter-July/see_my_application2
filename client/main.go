@@ -1,11 +1,12 @@
-package client
+package main
 
 import (
-	"bytes"
-	"fmt"
 	"golang.org/x/sys/windows" //提供windows系统调用的绑定,包括访问DLL和系统A
+	"log"
 	"net/http"
-	"syscall" //
+	"os"
+	"strings"
+	"syscall"
 	"time"
 	"unsafe"
 )
@@ -56,26 +57,13 @@ func GetWindowTextW(hwnd uintptr, nMaxCount int) string { //在获取了hwnd之�
 	return syscall.UTF16ToString(LpString[:length])
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "text/plain")
-	w.Write([]byte(""))
-}
-
 func main() {
-
-	http.HandleFunc("url", handler)
-	url := "https://localhost:8080"
-	name := []byte(`{foregroundwindowtext}`)
-	foregroundWindow := GetForegroundWindow()
-	foregroundwindowtextlength := GetWindowTextLengthW(uintptr(foregroundWindow))
-	foregroundwindowtext := GetWindowTextW(uintptr(foregroundWindow), foregroundwindowtextlength)
-	fmt.Println(foregroundwindowtext)
-	time.Sleep(1 * time.Second)
-	res, err := http.NewRequest("POST", url, bytes.NewBuffer(name))
-	if err != nil {
-		panic(err)
+	for {
+		time.Sleep(1 * time.Second)
+		foregroundWindow := GetForegroundWindow()
+		foregroundwindowtextlength := GetWindowTextLengthW(uintptr(foregroundWindow))
+		foregroundwindowtext := GetWindowTextW(uintptr(foregroundWindow), foregroundwindowtextlength)
+		log.Println(foregroundwindowtext)
+		http.Post(os.Getenv("UNTITLED_SERVER_URL"), "text/plain", strings.NewReader(foregroundwindowtext))
 	}
-	client := &http.Client{}
-	client.Do(res)
-
 }
